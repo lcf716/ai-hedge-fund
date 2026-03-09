@@ -55,9 +55,16 @@ const LLM_API_KEYS: ApiKey[] = [
   {
     key: 'OPENAI_API_KEY',
     label: 'OpenAI API',
-    description: 'For OpenAI models (gpt-4o, gpt-4o-mini, etc.)',
+    description: 'For OpenAI models with API key auth (gpt-4o, gpt-4o-mini, etc.)',
     url: 'https://platform.openai.com/',
     placeholder: 'your-openai-api-key'
+  },
+  {
+    key: 'OPENAI_OAUTH_TOKEN',
+    label: 'OpenAI OAuth Token',
+    description: 'For OpenAI models with OAuth bearer token auth',
+    url: 'https://platform.openai.com/',
+    placeholder: 'your-openai-oauth-token'
   },
   {
     key: 'OPENROUTER_API_KEY',

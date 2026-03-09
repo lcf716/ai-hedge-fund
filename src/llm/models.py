@@ -135,6 +135,18 @@ def get_models_list():
     ]
 
 
+def _resolve_openai_auth(api_keys: dict | None = None) -> tuple[str | None, str]:
+    """Resolve OpenAI auth credential (API key or OAuth access token)."""
+    oauth_token = (api_keys or {}).get("OPENAI_OAUTH_TOKEN") or os.getenv("OPENAI_OAUTH_TOKEN")
+    api_key = (api_keys or {}).get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+
+    if oauth_token:
+        return oauth_token, "oauth"
+    if api_key:
+        return api_key, "api_key"
+    return None, ""
+
+
 def get_model(model_name: str, model_provider: ModelProvider, api_keys: dict = None) -> ChatOpenAI | ChatGroq | ChatOllama | GigaChat | None:
     if model_provider == ModelProvider.GROQ:
         api_key = (api_keys or {}).get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
@@ -144,14 +156,24 @@ def get_model(model_name: str, model_provider: ModelProvider, api_keys: dict = N
             raise ValueError("Groq API key not found.  Please make sure GROQ_API_KEY is set in your .env file or provided via API keys.")
         return ChatGroq(model=model_name, api_key=api_key)
     elif model_provider == ModelProvider.OPENAI:
-        # Get and validate API key
-        api_key = (api_keys or {}).get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+        # Get and validate OpenAI credentials (OAuth access token or API key)
+        credential, credential_type = _resolve_openai_auth(api_keys)
         base_url = os.getenv("OPENAI_API_BASE")
-        if not api_key:
+        if not credential:
             # Print error to console
-            print(f"API Key Error: Please make sure OPENAI_API_KEY is set in your .env file or provided via API keys.")
-            raise ValueError("OpenAI API key not found.  Please make sure OPENAI_API_KEY is set in your .env file or provided via API keys.")
-        return ChatOpenAI(model=model_name, api_key=api_key, base_url=base_url)
+            print(
+                "OpenAI Credential Error: Please set OPENAI_API_KEY or OPENAI_OAUTH_TOKEN "
+                "in your .env file or provide it via API keys."
+            )
+            raise ValueError(
+                "OpenAI credential not found. Please set OPENAI_API_KEY or OPENAI_OAUTH_TOKEN "
+                "in your .env file or provide it via API keys."
+            )
+
+        if credential_type == "oauth":
+            print("Using OPENAI_OAUTH_TOKEN for OpenAI authentication.")
+
+        return ChatOpenAI(model=model_name, api_key=credential, base_url=base_url)
     elif model_provider == ModelProvider.ANTHROPIC:
         api_key = (api_keys or {}).get("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
