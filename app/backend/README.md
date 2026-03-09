@@ -40,6 +40,8 @@ cp .env.example .env
 ```bash
 # For running LLMs hosted by openai (gpt-4o, gpt-4o-mini, etc.)
 OPENAI_API_KEY=your-openai-api-key
+# Optional alternative for OpenAI OAuth auth
+OPENAI_OAUTH_TOKEN=your-openai-oauth-token
 
 # For running LLMs hosted by groq (deepseek, llama3, etc.)
 GROQ_API_KEY=your-groq-api-key
